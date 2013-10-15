@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -80,7 +78,7 @@ namespace Deodexer
 		public void cleanup() {
 			Console.WriteLine("Cleaning up");
 			if (Directory.Exists(outDir)) deleteDir(outDir);
-			if (Directory.Exists(classesDex)) Directory.Delete(classesDex);
+			if (Directory.Exists(classesDex)) deleteDir(classesDex);
 		}
 
 		static void deleteDir(string path){

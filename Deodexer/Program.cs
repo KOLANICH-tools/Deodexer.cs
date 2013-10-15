@@ -1,12 +1,36 @@
 ﻿using System;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Deodexer
 {
 	
 	class Program
 	{
+		//thanks to http://stackoverflow.com/a/749653/450946
+		[DllImport("shell32.dll", SetLastError = true)]
+		static extern IntPtr CommandLineToArgvW(
+			[MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine, out int pNumArgs);
+
+		public static string[] CommandLineToArgs(string commandLine) {
+			int argc;
+			var argv = CommandLineToArgvW(commandLine, out argc);
+			if (argv == IntPtr.Zero)
+				throw new System.ComponentModel.Win32Exception();
+			try {
+				var args = new string[argc];
+				for (var i = 0; i < args.Length; i++) {
+					var p = Marshal.ReadIntPtr(argv, i * IntPtr.Size);
+					args[i] = Marshal.PtrToStringUni(p);
+				}
+
+				return args;
+			}
+			finally {
+				Marshal.FreeHGlobal(argv);
+			}
+		}
+
 		[STAThread]
 		static void Main(string[] args){
 			var menu = new Menu();
@@ -19,30 +43,24 @@ namespace Deodexer
 
 			if (args.Length > 0)
 			{
-				var str = "";
-				if(args.Length>1)
-					for (var i = 1; i < args.Length; i++)
-						str += args[i];
-				menu.exec(args[0],str);
+				menu.exec(args[0], (args.Length >= 1 ? args.Skip(1) : null));
 				return;
 			}
 
 			menu.exec("help");
 
-
-			var rx = new Regex(@"^([^\s]+)(?:\s+(.+))?$");
-			while (true)
-			{
+			while (true){
 				Console.ForegroundColor=ConsoleColor.Green;
 				Console.Write("deodexer> ");
 				Console.ResetColor();
 				var line = Console.ReadLine();
 				if(line==null)continue;
-				var match = rx.Match(line);
-				if (match.Groups[1].Success){
+
+				var commandTextRep=CommandLineToArgs(line);
+				if (commandTextRep.Length>0) {
 					Console.ForegroundColor = ConsoleColor.Blue;
 					Console.BackgroundColor = ConsoleColor.White;
-					menu.exec(match.Groups[1].Value, (match.Groups[2].Success ? match.Groups[2].Value : ""));
+					menu.exec(commandTextRep[0], (commandTextRep.Length >= 2 ? commandTextRep.Skip(1) : null));
 					Console.ResetColor();
 				}
 			}

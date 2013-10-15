@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Deodexer
@@ -23,19 +22,15 @@ namespace Deodexer
 			dialog.Title = "Select files to be deodexed";
 		}
 
-		public override void exec(string restOfString = null){
-			string[] fileNames;
-			if (String.IsNullOrEmpty(restOfString))
+		public override void exec(string[] fileNames=null) {
+			if (fileNames == null)
 			{
 				dialog.Multiselect = true;
 				dialog.ShowDialog();
 				fileNames = dialog.FileNames;
 			}
-			else
-				fileNames = restOfString.Split(' ', '\t');
 
 			dialog.Multiselect = false;
-
 			for(var i=0;i<fileNames.Length;i++)
 			{
 				switch (fileNames[i]) {
@@ -69,10 +64,14 @@ namespace Deodexer
 				}
 				foreach (var dir in dirs)
 						deodexFileOrDir(dir.FullName);
-			}else if (File.Exists(fn)){
+			} else if (File.Exists(fn)) {
 				deodexer.deodex(Path.GetFullPath(fn));
-			}else
+			}else {
+				var prevCol = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("File " + fn + " doesn't exist!");
+				Console.ForegroundColor = prevCol;
+			}
 		}
 
 		public void Dispose() {
@@ -87,13 +86,16 @@ namespace Deodexer
 			this.deodexer = deodexer;
 		}
 
-		public override void exec(string dir = ""){
-			if (dir == "")
-				dir = Deodexer.defaultFrameworkDir;
+		public override void exec(string[] dirs = null){
+			string dir = dirs == null ? Deodexer.defaultFrameworkDir : dirs[0];
 			if (Directory.Exists(dir))
 				deodexer.frameworkDir = dir;
-			else
+			else {
+				var prevCol = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("Directory doesn't exist");
+				Console.ForegroundColor = prevCol;
+			}
 		}
 	}
 }

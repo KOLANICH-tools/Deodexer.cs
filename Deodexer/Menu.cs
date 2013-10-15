@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Deodexer
 {
@@ -8,7 +8,7 @@ namespace Deodexer
 	{
 		public string description = "Description is not available";
 		public string detailedDescription = null;
-		abstract public void exec(string restOfString = "");
+		abstract public void exec(string[] args=null);
 	}
 
 	class ExitAppCommand : Command
@@ -17,7 +17,7 @@ namespace Deodexer
 			description = "exits application";
 			detailedDescription = "exits this application";
 		}
-		override public void exec(string restOfString = "") {
+		override public void exec(string[] args=null) {
 			Environment.Exit(0);
 		}
 	}
@@ -31,24 +31,28 @@ namespace Deodexer
 			description = "Shows this help";
 		}
 
-		override public void exec(string restOfString = "") {
-			if (string.IsNullOrEmpty(restOfString)) {
+		override public void exec(string[] cmds=null) {
+			if (cmds==null) {
 				foreach (var cmd in menu.commands) {
 					Console.WriteLine(cmd.Key + " :" + Environment.NewLine + "\t" + cmd.Value.description.Replace(Environment.NewLine, Environment.NewLine + "\t"));
 				}
 			} else {
-				if (menu.commands.ContainsKey(restOfString)) {
-					Console.WriteLine(restOfString +
-						Environment.NewLine+ menu.commands[restOfString].description +
-						(
-							menu.commands[restOfString].detailedDescription!=null
-							?
-							(Environment.NewLine + menu.commands[restOfString].detailedDescription)
-							:
-							""
-						)
-					);
-				}
+				foreach (var cmd in cmds)
+					if (menu.commands.ContainsKey(cmd)) {
+						Console.ForegroundColor = ConsoleColor.Blue;
+						Console.WriteLine(cmd +
+										  Environment.NewLine + menu.commands[cmd].description +
+										  (
+											  menu.commands[cmd].detailedDescription != null
+												  ? (Environment.NewLine + menu.commands[cmd].detailedDescription)
+												  : ""
+											  )
+							);
+					}
+					else {
+						Console.ForegroundColor = ConsoleColor.DarkRed;
+						Console.WriteLine("Command "+cmd +"is not found!!!");
+					}
 			}
 		}
 	}
@@ -58,7 +62,7 @@ namespace Deodexer
 			description = "Shows credits";
 		}
 
-		override public void exec(string restOfString = ""){
+		override public void exec(string[] args=null) {
 			Console.WriteLine();
 			Console.WriteLine("Deodexer");
 			Console.WriteLine("Copyleft by KOLANICH, 2013");
@@ -70,9 +74,13 @@ namespace Deodexer
 	class Menu
 	{
 		public Dictionary<string, Command> commands=new Dictionary<string, Command>();
-		public void exec(string command, string restOfString="") {
+		public void exec(string command, IEnumerable<string> args=null){
+			string[] args1 = args != null ? args.ToArray() : null;
+			/*for (var i = 0; i < args1.Length; i++) {
+				//TODO: make templates global (also use command pattern for it)
+			}*/
 			if (commands.ContainsKey(command)) {
-				commands[command].exec(restOfString);
+				commands[command].exec(args1);
 			} else {
 				Console.WriteLine("Command not found");
 			}
