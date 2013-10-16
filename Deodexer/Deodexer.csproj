@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -43,16 +45,24 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DeodexComands.cs" />
+    <Compile Include="Commands\EchoCommand.cs" />
+    <Compile Include="Commands\ExitAppCommand.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\CreditsCommand.cs" />
+    <Compile Include="Commands\DeodexCommand.cs" />
+    <Compile Include="Commands\FolderProcessingCommand.cs" />
+    <Compile Include="Commands\FrameworkCommand.cs" />
+    <Compile Include="Commands\HelpCommand.cs" />
+    <Compile Include="Commands\ZipAlignCommand.cs" />
     <Compile Include="Deodexer.cs" />
+    <Compile Include="Commands\FileProcessingComand.cs" />
     <Compile Include="Menu.cs" />
+    <Compile Include="PathPlaceholders\FolderDialogPlaceholder.cs" />
+    <Compile Include="PathPlaceholders\FrameworkPlaceholder.cs" />
+    <Compile Include="PathPlaceholders\IPathPlaceholder.cs" />
+    <Compile Include="PathPlaceholders\FileDialogPlaceholder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -62,6 +72,7 @@
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

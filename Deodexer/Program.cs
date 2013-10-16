@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Deodexer.Commands;
+using Deodexer.PathPlaceholders;
 
 namespace Deodexer
 {
@@ -12,16 +15,16 @@ namespace Deodexer
 		static extern IntPtr CommandLineToArgvW(
 			[MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine, out int pNumArgs);
 
-		public static string[] CommandLineToArgs(string commandLine) {
+		public static List<string> CommandLineToArgs(string commandLine) {
 			int argc;
 			var argv = CommandLineToArgvW(commandLine, out argc);
 			if (argv == IntPtr.Zero)
 				throw new System.ComponentModel.Win32Exception();
 			try {
-				var args = new string[argc];
-				for (var i = 0; i < args.Length; i++) {
+				var args = new List<string>(argc);
+				for (var i = 0; i < argc; i++) {
 					var p = Marshal.ReadIntPtr(argv, i * IntPtr.Size);
-					args[i] = Marshal.PtrToStringUni(p);
+					args.Add(Marshal.PtrToStringUni(p));
 				}
 
 				return args;
@@ -37,8 +40,13 @@ namespace Deodexer
 			menu.addDefaultCommands();
 			var deodexer = new Deodexer();
 			menu.commands.Add("deodex",new DeodexCommand(deodexer));
-			menu.commands.Add("framework", new SetFrameworkCommand(deodexer));
+			menu.commands.Add("framework", new FrameworkCommand(deodexer));
+			menu.commands.Add("zipalign", new ZipAlignCommand(deodexer));
 
+			var frPlh = new FrameworkPlaceholder{deodexer=deodexer};
+			foreach (var cmd in menu.commands) {
+				cmd.Value.placeholders.Add(frPlh);
+			}
 
 
 			if (args.Length > 0)
@@ -57,10 +65,10 @@ namespace Deodexer
 				if(line==null)continue;
 
 				var commandTextRep=CommandLineToArgs(line);
-				if (commandTextRep.Length>0) {
+				if (commandTextRep.Count>0) {
 					Console.ForegroundColor = ConsoleColor.Blue;
 					Console.BackgroundColor = ConsoleColor.White;
-					menu.exec(commandTextRep[0], (commandTextRep.Length >= 2 ? commandTextRep.Skip(1) : null));
+					menu.exec(commandTextRep[0], (commandTextRep.Count >= 2 ? commandTextRep.Skip(1) : null));
 					Console.ResetColor();
 				}
 			}

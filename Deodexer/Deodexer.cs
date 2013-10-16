@@ -75,8 +75,13 @@ namespace Deodexer
 			Console.WriteLine("Embedding classes.dex into  "+ fileName + " ...");
 			compressor.CompressFiles(fileName, classesDex);
 		}
+		public bool isDeodexed(string fileName) {
+			using (var a = new SevenZipExtractor(fileName)) {
+				return a.ArchiveFileNames.Contains(defaultClassesDex);
+			}
+		}
 		public void cleanup() {
-			Console.WriteLine("Cleaning up");
+			Console.WriteLine("Cleaning up ...");
 			if (Directory.Exists(outDir)) deleteDir(outDir);
 			if (Directory.Exists(classesDex)) deleteDir(classesDex);
 		}
@@ -98,24 +103,29 @@ namespace Deodexer
 
 
 		public void deodex(string fileName){
-			
-			var odexFileName = fileName.Substring(0,fileName.LastIndexOf('.')+1)+"odex";
-			if (!File.Exists(odexFileName))
-			{
-				Console.WriteLine("No .odex file for " + fileName+ " !");
+
+			var odexFileName = fileName.Substring(0, fileName.LastIndexOf('.') + 1) + "odex";
+			if (!File.Exists(odexFileName)) {
+				Console.WriteLine("No .odex file for " + fileName + " !");
 				return;
 			}
 			cleanup();
-			if (Directory.Exists(outDir)){
-				throw new Exception("WTF??? out dir is not cleaned up... it is not safe to smali so it will put old garbage into our file");
+			if (Directory.Exists(outDir)) {
+				throw new Exception(
+					"WTF??? out dir is not cleaned up... it is not safe to smali so it will put old garbage into our file");
 			}
-			backsmali(odexFileName);
-			smali();
-			if (!File.Exists(classesDex)) {
-				Console.WriteLine("Unable to smali");
-				return;
+			if (isDeodexed(fileName)) {
+				Console.WriteLine("Already deodexed!");
 			}
-			embedClassesDex(fileName);
+			else {
+				backsmali(odexFileName);
+				smali();
+				if (!File.Exists(classesDex)) {
+					Console.WriteLine("Unable to smali");
+					return;
+				}
+				embedClassesDex(fileName);
+			}
 			zipalign(fileName);
 			File.Delete(odexFileName);
 		}
